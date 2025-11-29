@@ -1,0 +1,53 @@
+# FastAPI Backend (Latest)
+fastapi==0.122.0
+uvicorn[standard]==0.34.0
+python-multipart==0.0.20
+pydantic==2.10.5
+pydantic-settings==2.7.1
+
+# Streamlit Frontend (Latest)
+streamlit==1.41.1
+
+# LangChain (Latest - November 2025)
+langchain==0.3.14
+langchain-community==0.3.14
+langchain-core==0.3.29
+langchain-text-splitters==0.3.4
+
+# Document Processing (Latest)
+unstructured==0.16.12
+python-magic==0.4.27
+pypdf==5.1.0
+pymupdf==1.25.2
+markdown==3.7
+python-docx==1.1.2
+beautifulsoup4==4.12.3
+lxml==5.3.0
+
+# Vector Database - Qdrant Cloud (Latest)
+qdrant-client==1.12.1
+
+# Embeddings - HuggingFace (Latest)
+sentence-transformers==3.3.1
+transformers==4.47.1
+torch==2.5.1
+
+# LLM - Ollama (Latest)
+langchain-ollama==0.2.2
+ollama==0.4.4
+
+# Selenium (Latest)
+selenium==4.27.1
+webdriver-manager==4.0.2
+
+# Utilities
+python-dotenv==1.0.1
+requests==2.32.3
+aiofiles==24.1.0
+
+# Data Processing
+numpy==1.26.4
+pandas==2.2.3
+
+# Logging
+loguru==0.7.3
