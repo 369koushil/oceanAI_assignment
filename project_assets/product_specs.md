@@ -66,6 +66,7 @@ Email:
 - Regex: /^[^@\s]+@[^@\s]+\.[^@\s]+$/  
 - Error: “Please enter a valid email address”
 
+
 Address:
 - Not empty → error: “Please enter your shipping address”
 

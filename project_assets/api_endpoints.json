@@ -18,7 +18,6 @@
         "empty": { "valid": false, "error": "Please enter a discount code" }
       }
     },
-
     {
       "name": "Submit Order",
       "method": "POST",

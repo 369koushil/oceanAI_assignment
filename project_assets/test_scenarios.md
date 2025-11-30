@@ -11,6 +11,7 @@
 
 ### 1. Product Display and Cart Management
 
+
 #### Scenario 1.1: Add Single Product to Cart
 **Given:** User is on the checkout page  
 **When:** User clicks "Add to Cart" for Wireless Headphones  

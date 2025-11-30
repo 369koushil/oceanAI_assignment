@@ -106,6 +106,7 @@ Cart:
 - Quantity field: input[type=number]
 - Auto-updates totals
 
+
 Success Message:
 - Green (#28a745)
 - Slide-down animation
