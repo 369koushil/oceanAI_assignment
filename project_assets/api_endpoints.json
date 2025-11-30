@@ -1,0 +1,381 @@
+{
+  "api_version": "1.0",
+  "base_url": "https://api.eshop-checkout.example.com",
+  "last_updated": "2025-01-15",
+  "description": "API documentation for E-Shop Checkout System",
+  
+  "endpoints": [
+    {
+      "name": "Get Products",
+      "method": "GET",
+      "path": "/api/products",
+      "description": "Retrieve list of available products",
+      "authentication": "Not required",
+      "request": {
+        "parameters": [],
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "response": {
+        "success": {
+          "status_code": 200,
+          "body": {
+            "products": [
+              {
+                "product_id": "WH-001",
+                "name": "Wireless Headphones",
+                "price": 79.99,
+                "description": "Premium noise-cancelling headphones",
+                "stock_status": "in_stock",
+                "category": "Electronics"
+              }
+            ]
+          }
+        },
+        "error": {
+          "status_code": 500,
+          "message": "Internal server error"
+        }
+      }
+    },
+    
+    {
+      "name": "Apply Coupon",
+      "method": "POST",
+      "path": "/api/apply_coupon",
+      "description": "Validate and apply discount coupon code",
+      "authentication": "Not required",
+      "request": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "code": "string",
+          "subtotal": "number"
+        },
+        "example": {
+          "code": "SAVE15",
+          "subtotal": 249.99
+        }
+      },
+      "response": {
+        "success": {
+          "status_code": 200,
+          "body": {
+            "valid": true,
+            "discount_type": "percentage",
+            "discount_value": 15,
+            "discount_amount": 37.50,
+            "new_total": 212.49,
+            "message": "Discount applied: 15% off!"
+          }
+        },
+        "invalid_code": {
+          "status_code": 400,
+          "body": {
+            "valid": false,
+            "error": "Invalid discount code",
+            "message": "The coupon code entered is not valid"
+          }
+        },
+        "empty_code": {
+          "status_code": 400,
+          "body": {
+            "valid": false,
+            "error": "Empty code",
+            "message": "Please enter a discount code"
+          }
+        }
+      },
+      "business_rules": {
+        "valid_codes": ["SAVE15"],
+        "SAVE15": {
+          "type": "percentage",
+          "value": 15,
+          "description": "15% off on subtotal",
+          "minimum_purchase": 0,
+          "maximum_discount": null,
+          "expiry_date": null,
+          "usage_limit": null
+        }
+      }
+    },
+    
+    {
+      "name": "Calculate Shipping",
+      "method": "POST",
+      "path": "/api/calculate_shipping",
+      "description": "Calculate shipping cost based on method and address",
+      "authentication": "Not required",
+      "request": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "shipping_method": "string (standard|express)",
+          "address": "string",
+          "subtotal": "number"
+        },
+        "example": {
+          "shipping_method": "express",
+          "address": "123 Main St, New York, NY 10001",
+          "subtotal": 249.99
+        }
+      },
+      "response": {
+        "success": {
+          "status_code": 200,
+          "body": {
+            "shipping_method": "express",
+            "shipping_cost": 10.00,
+            "delivery_time": "2-3 business days",
+            "total_with_shipping": 259.99
+          }
+        }
+      },
+      "shipping_rates": {
+        "standard": {
+          "cost": 0.00,
+          "delivery_time": "5-7 business days",
+          "description": "Free standard shipping"
+        },
+        "express": {
+          "cost": 10.00,
+          "delivery_time": "2-3 business days",
+          "description": "Express shipping with tracking"
+        }
+      }
+    },
+    
+    {
+      "name": "Submit Order",
+      "method": "POST",
+      "path": "/api/submit_order",
+      "description": "Submit complete order with customer details and payment",
+      "authentication": "Required (future implementation)",
+      "request": {
+        "headers": {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer <token>"
+        },
+        "body": {
+          "customer": {
+            "name": "string (required)",
+            "email": "string (required, valid email format)",
+            "address": "string (required)"
+          },
+          "cart": {
+            "items": [
+              {
+                "product_id": "string",
+                "product_name": "string",
+                "quantity": "number",
+                "unit_price": "number",
+                "line_total": "number"
+              }
+            ],
+            "subtotal": "number"
+          },
+          "shipping": {
+            "method": "string (standard|express)",
+            "cost": "number"
+          },
+          "discount": {
+            "code": "string (optional)",
+            "amount": "number"
+          },
+          "payment": {
+            "method": "string (credit-card|paypal)",
+            "total": "number"
+          }
+        },
+        "example": {
+          "customer": {
+            "name": "John Doe",
+            "email": "john.doe@example.com",
+            "address": "123 Main St, New York, NY 10001"
+          },
+          "cart": {
+            "items": [
+              {
+                "product_id": "WH-001",
+                "product_name": "Wireless Headphones",
+                "quantity": 1,
+                "unit_price": 79.99,
+                "line_total": 79.99
+              }
+            ],
+            "subtotal": 79.99
+          },
+          "shipping": {
+            "method": "standard",
+            "cost": 0.00
+          },
+          "discount": {
+            "code": "SAVE15",
+            "amount": 12.00
+          },
+          "payment": {
+            "method": "credit-card",
+            "total": 67.99
+          }
+        }
+      },
+      "response": {
+        "success": {
+          "status_code": 200,
+          "body": {
+            "success": true,
+            "order_id": "ORD-2025-001234",
+            "status": "confirmed",
+            "message": "Payment Successful! Thank you for your order.",
+            "order_details": {
+              "total_paid": 67.99,
+              "estimated_delivery": "2025-01-20",
+              "tracking_number": null
+            }
+          }
+        },
+        "validation_error": {
+          "status_code": 400,
+          "body": {
+            "success": false,
+            "error": "Validation failed",
+            "details": {
+              "email": "Please enter a valid email address",
+              "name": "Please enter your full name",
+              "address": "Please enter your shipping address"
+            }
+          }
+        },
+        "empty_cart": {
+          "status_code": 400,
+          "body": {
+            "success": false,
+            "error": "Empty cart",
+            "message": "Your cart is empty. Please add items before checkout."
+          }
+        }
+      }
+    },
+    
+    {
+      "name": "Validate Email",
+      "method": "POST",
+      "path": "/api/validate_email",
+      "description": "Validate email format",
+      "authentication": "Not required",
+      "request": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "email": "string"
+        }
+      },
+      "response": {
+        "valid": {
+          "status_code": 200,
+          "body": {
+            "valid": true,
+            "email": "user@example.com",
+            "format_correct": true
+          }
+        },
+        "invalid": {
+          "status_code": 400,
+          "body": {
+            "valid": false,
+            "email": "invalid-email",
+            "error": "Please enter a valid email address",
+            "format_correct": false
+          }
+        }
+      },
+      "validation_rules": {
+        "format": "Must contain @ symbol and valid domain",
+        "examples_valid": [
+          "user@example.com",
+          "test.user@domain.co.uk",
+          "john.doe+test@example.org"
+        ],
+        "examples_invalid": [
+          "user@",
+          "@domain.com",
+          "userdomain.com",
+          "user @example.com",
+          "user@domain"
+        ]
+      }
+    }
+  ],
+  
+  "error_codes": {
+    "400": "Bad Request - Invalid input or validation error",
+    "401": "Unauthorized - Authentication required",
+    "404": "Not Found - Resource does not exist",
+    "500": "Internal Server Error - Server-side error"
+  },
+  
+  "validation_rules": {
+    "customer_name": {
+      "required": true,
+      "type": "string",
+      "min_length": 1,
+      "error_message": "Please enter your full name"
+    },
+    "customer_email": {
+      "required": true,
+      "type": "string",
+      "format": "email",
+      "pattern": "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$",
+      "error_message": "Please enter a valid email address"
+    },
+    "customer_address": {
+      "required": true,
+      "type": "string",
+      "min_length": 1,
+      "error_message": "Please enter your shipping address"
+    },
+    "shipping_method": {
+      "required": true,
+      "type": "enum",
+      "values": ["standard", "express"],
+      "default": "standard"
+    },
+    "payment_method": {
+      "required": true,
+      "type": "enum",
+      "values": ["credit-card", "paypal"],
+      "default": "credit-card"
+    }
+  },
+  
+  "test_data": {
+    "valid_discount_codes": ["SAVE15"],
+    "invalid_discount_codes": ["INVALID", "EXPIRED", "SAVE20", "FREE"],
+    "sample_products": [
+      {
+        "product_id": "WH-001",
+        "name": "Wireless Headphones",
+        "price": 79.99
+      },
+      {
+        "product_id": "SW-002",
+        "name": "Smart Watch",
+        "price": 199.99
+      },
+      {
+        "product_id": "BS-003",
+        "name": "Bluetooth Speaker",
+        "price": 49.99
+      }
+    ],
+    "sample_customer": {
+      "name": "John Doe",
+      "email": "john.doe@example.com",
+      "address": "123 Main St, New York, NY 10001"
+    }
+  }
+}

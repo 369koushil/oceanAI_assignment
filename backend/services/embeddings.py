@@ -1,7 +1,13 @@
 from langchain_huggingface import HuggingFaceEmbeddings
-from backend.config import settings
 from typing import List
 import logging
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
+EMBEDDING_DIMENSION = int(os.getenv("EMBEDDING_DIMENSION", "384"))
 
 logger = logging.getLogger(__name__)
 
@@ -9,7 +15,7 @@ logger = logging.getLogger(__name__)
 class EmbeddingService:
     
     def __init__(self):
-        self.model_name = settings.embedding_model
+        self.model_name = EMBEDDING_MODEL
         self.embeddings = None
         self._initialize_model()
     
@@ -43,7 +49,7 @@ class EmbeddingService:
             raise
     
     def get_embedding_dimension(self) -> int:
-        return settings.embedding_dimension
+        return EMBEDDING_DIMENSION
 
 
 # Global embedding service instance

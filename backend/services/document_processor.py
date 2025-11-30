@@ -5,8 +5,14 @@ import json
 import markdown
 from bs4 import BeautifulSoup
 import pymupdf
-from backend.config import settings
 import logging
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+CHUNK_SIZE = int(os.getenv("CHUNK_SIZE", "1000"))
+CHUNK_OVERLAP = int(os.getenv("CHUNK_OVERLAP", "200"))
 
 logger = logging.getLogger(__name__)
 
@@ -15,8 +21,8 @@ class DocumentProcessor:
     
     def __init__(self):
         self.text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=settings.chunk_size,
-            chunk_overlap=settings.chunk_overlap,
+            chunk_size=CHUNK_SIZE,
+            chunk_overlap=CHUNK_OVERLAP,
             length_function=len,
             is_separator_regex=False,
             separators=["\n\n", "\n", ". ", " ", ""]

@@ -3,19 +3,31 @@ from fastapi.middleware.cors import CORSMiddleware
 from typing import List
 import logging
 from loguru import logger
+import os
+from dotenv import load_dotenv
 
 # services
 from backend.services.document_processor import document_processor
 from backend.services.vector_store import vector_store_service
 from backend.services.embeddings import embedding_service
+from backend.services.test_case_generator import test_case_generator
+from backend.services.selenium_generator import selenium_generator
 
 # models
 from backend.models.schemas import (
     DocumentUploadResponse,
     KnowledgeBaseStatus,
+    TestCaseGenerationRequest,
+    TestCaseGenerationResponse,
+    SeleniumScriptRequest,
+    SeleniumScriptResponse,
     HealthCheck
 )
 
+load_dotenv()
+
+BACKEND_HOST = os.getenv("BACKEND_HOST", "127.0.0.1")
+BACKEND_PORT = int(os.getenv("BACKEND_PORT", "8000"))
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -24,7 +36,6 @@ logger.add("logs/app.log", rotation="500 MB", retention="10 days")
 # Initialize FastAPI app
 app = FastAPI(
     title="Autonomous QA Agent API",
-    description="AI-powered test case and Selenium script generation",
     version="1.0.0"
 )
 
@@ -59,15 +70,15 @@ async def health_check():
         qdrant_connected = vector_store_service.health_check()
         
         # Check Ollama
-        llm_available = True
+        ollama_available = True
         
         # Check embedding model
         embedding_model_loaded = embedding_service.embeddings is not None
         
         return HealthCheck(
-            status="healthy" if all([qdrant_connected, llm_available, embedding_model_loaded]) else "degraded",
+            status="healthy" if all([qdrant_connected, ollama_available, embedding_model_loaded]) else "degraded",
             qdrant_connected=qdrant_connected,
-            llm_available=llm_available,
+            ollama_available=ollama_available,
             embedding_model_loaded=embedding_model_loaded
         )
     except Exception as e:
@@ -167,6 +178,68 @@ async def get_knowledge_base_status():
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@app.post("/api/generate-test-cases", response_model=TestCaseGenerationResponse)
+async def generate_test_cases(request: TestCaseGenerationRequest):
+    try:
+        logger.info(f"Generating test cases for query: {request.query}")
+        
+        result = test_case_generator.generate_test_cases(
+            query=request.query,
+            max_results=request.max_test_cases
+        )
+        
+        if not result["success"]:
+            raise HTTPException(status_code=400, detail=result.get("error", "Failed to generate test cases"))
+        
+        return TestCaseGenerationResponse(
+            success=True,
+            test_cases=result["test_cases"],
+            total_generated=result["total_generated"],
+            sources_used=result["sources_used"]
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error generating test cases: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/generate-selenium-script", response_model=SeleniumScriptResponse)
+async def generate_selenium_script(request: SeleniumScriptRequest):
+    try:
+        logger.info(f"Generating Selenium script for test case: {request.test_case.test_id}")
+        
+        html_content = request.html_content or html_content_store.get("checkout_html", "")
+        
+        if not html_content:
+            raise HTTPException(
+                status_code=400,
+                detail="No HTML content available. Please upload checkout.html first."
+            )
+        
+        result = selenium_generator.generate_script(
+            test_case=request.test_case,
+            html_content=html_content
+        )
+        
+        if not result["success"]:
+            raise HTTPException(status_code=400, detail=result.get("error", "Failed to generate script"))
+        
+        return SeleniumScriptResponse(
+            success=True,
+            script=result["script"],
+            test_case_id=result["test_case_id"],
+            language="python"
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error generating Selenium script: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @app.delete("/api/knowledge-base/reset")
 async def reset_knowledge_base():
     try:
@@ -184,17 +257,19 @@ async def reset_knowledge_base():
         raise HTTPException(status_code=500, detail=str(e))
 
 
-
-if __name__ == "__main__":
-    import uvicorn
-    
-    logger.info("Starting Autonomous QA Agent API...")
-    logger.info(f"Qdrant URL: {settings.qdrant_url}")
-    logger.info(f"Model: {settings.ollama_model}")
-    
-    uvicorn.run(
-        "backend.main:app",
-        host=settings.backend_host,
-        port=settings.backend_port,
-        reload=True
-    )
+@app.get("/api/test-rag")
+async def test_rag(query: str):
+    try:
+        results = vector_store_service.similarity_search(
+            query=query,
+            k=5
+        )
+        
+        return {
+            "query": query,
+            "results_found": len(results),
+            "results": results
+        }
+    except Exception as e:
+        logger.error(f"Error testing RAG: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))

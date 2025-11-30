@@ -1,29 +1,36 @@
 from qdrant_client import QdrantClient
 from qdrant_client.models import Distance, VectorParams, PointStruct
 from langchain_core.documents import Document
-from backend.config import settings
 from backend.services.embeddings import embedding_service
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any
 import logging
 import uuid
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+QDRANT_URL = os.getenv("QDRANT_URL")
+QDRANT_API_KEY = os.getenv("QDRANT_API_KEY")
+QDRANT_COLLECTION_NAME = os.getenv("QDRANT_COLLECTION_NAME", "qa_agent_knowledge_base")
+
 
 logger = logging.getLogger(__name__)
-
 
 class VectorStoreService:
     
     def __init__(self):
         self.client = None
-        self.collection_name = settings.qdrant_collection_name
+        self.collection_name = QDRANT_COLLECTION_NAME
         self._initialize_client()
     
     def _initialize_client(self):
         try:
-            logger.info(f"Connecting to Qdrant Cloud: {settings.qdrant_url}")
+            logger.info(f"Connecting to Qdrant Cloud: {QDRANT_URL}")
             
             self.client = QdrantClient(
-                url=settings.qdrant_url,
-                api_key=settings.qdrant_api_key,
+                url=QDRANT_URL,
+                api_key=QDRANT_API_KEY,
             )
             
             # Test connection
@@ -46,7 +53,7 @@ class VectorStoreService:
             self.client.create_collection(
                 collection_name=self.collection_name,
                 vectors_config=VectorParams(
-                    size=settings.embedding_dimension,
+                    size=embedding_service.get_embedding_dimension(),
                     distance=Distance.COSINE
                 )
             )
