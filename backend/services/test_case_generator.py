@@ -1,3 +1,7 @@
+"""
+Test Case Generation Service using RAG (Retrieval Augmented Generation)
+Latest LangChain patterns with structured output
+"""
 from backend.services.vector_store import vector_store_service
 from backend.services.llm_service import llm_service
 from backend.models.schemas import TestCase
@@ -10,6 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 class TestCaseGenerator:
+    """Generate test cases using RAG from knowledge base"""
     
     def __init__(self):
         self.vector_store = vector_store_service
@@ -20,7 +25,16 @@ class TestCaseGenerator:
         query: str,
         max_results: int = 10
     ) -> Dict[str, Any]:
+        """
+        Generate test cases based on user query using RAG
         
+        Args:
+            query: User's test case generation request
+            max_results: Maximum number of test cases to generate
+            
+        Returns:
+            Dictionary with test cases and metadata
+        """
         try:
             logger.info(f"Generating test cases for query: {query}")
             
@@ -133,19 +147,33 @@ CRITICAL RULES:
 Output Format: Valid JSON array only, no markdown, no explanations."""
     
     def _parse_test_cases(self, response: str) -> List[TestCase]:
+        """
+        Parse LLM response into TestCase objects
+        
+        Args:
+            response: LLM generated response (should be JSON)
+            
+        Returns:
+            List of TestCase objects
+        """
         try:
+            # Clean response - remove markdown code blocks if present
             cleaned = response.strip()
             if cleaned.startswith("```"):
+                # Remove ```json and ``` markers
                 cleaned = re.sub(r'^```json?\s*', '', cleaned)
                 cleaned = re.sub(r'\s*```$', '', cleaned)
             
             cleaned = cleaned.strip()
             
+            # Parse JSON
             test_cases_data = json.loads(cleaned)
             
+            # Convert to TestCase objects
             test_cases = []
             for idx, tc_data in enumerate(test_cases_data):
                 try:
+                    # Ensure test_id exists
                     if "test_id" not in tc_data:
                         tc_data["test_id"] = f"TC-{idx+1:03d}"
                     
@@ -160,13 +188,16 @@ Output Format: Valid JSON array only, no markdown, no explanations."""
         except json.JSONDecodeError as e:
             logger.error(f"JSON parsing error: {str(e)}")
             logger.error(f"Response was: {response[:500]}")
+            # Attempt to extract test cases using regex as fallback
             return self._fallback_parse(response)
         except Exception as e:
             logger.error(f"Error parsing test cases: {str(e)}")
             return []
     
     def _fallback_parse(self, response: str) -> List[TestCase]:
+        """Fallback parsing if JSON parsing fails"""
         try:
+            # Try to find JSON array pattern
             json_match = re.search(r'\[\s*\{.*?\}\s*\]', response, re.DOTALL)
             if json_match:
                 json_str = json_match.group(0)
@@ -189,9 +220,20 @@ Output Format: Valid JSON array only, no markdown, no explanations."""
         test_cases: List[TestCase],
         available_sources: List[str]
     ) -> List[TestCase]:
+        """
+        Validate that test cases reference actual source documents
+        
+        Args:
+            test_cases: List of generated test cases
+            available_sources: List of actual source document names
+            
+        Returns:
+            List of validated test cases
+        """
         validated = []
         
         for tc in test_cases:
+            # Check if grounded_in references a valid source
             is_valid = any(
                 source.lower() in tc.grounded_in.lower() 
                 for source in available_sources
@@ -200,9 +242,11 @@ Output Format: Valid JSON array only, no markdown, no explanations."""
             if is_valid or tc.grounded_in == "Multiple sources":
                 validated.append(tc)
             else:
+                # Log warning but still include (with note)
                 logger.warning(f"Test case {tc.test_id} references unknown source: {tc.grounded_in}")
+                # Try to find best matching source
                 if available_sources:
-                    tc.grounded_in = available_sources[0]
+                    tc.grounded_in = available_sources[0]  # Default to first source
                 validated.append(tc)
         
         return validated
@@ -212,6 +256,16 @@ Output Format: Valid JSON array only, no markdown, no explanations."""
         feature_name: str,
         test_types: List[str] = None
     ) -> Dict[str, Any]:
+        """
+        Generate test cases for a specific feature
+        
+        Args:
+            feature_name: Name of the feature to test
+            test_types: Types of tests (positive, negative, edge-case)
+            
+        Returns:
+            Dictionary with generated test cases
+        """
         if test_types is None:
             test_types = ["positive", "negative", "edge-case"]
         

@@ -26,8 +26,8 @@ from backend.models.schemas import (
 
 load_dotenv()
 
-BACKEND_HOST = os.getenv("BACKEND_HOST", "127.0.0.1")
-BACKEND_PORT = int(os.getenv("BACKEND_PORT", "8000"))
+BACKEND_HOST = "127.0.0.1"
+BACKEND_PORT =8000
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

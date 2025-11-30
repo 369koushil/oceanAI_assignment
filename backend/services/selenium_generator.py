@@ -1,8 +1,13 @@
+"""
+Selenium Script Generation Service
+Generates executable Python Selenium scripts from test cases
+"""
+import json
 from backend.services.vector_store import vector_store_service
 from backend.services.llm_service import llm_service
 from backend.models.schemas import TestCase
 from bs4 import BeautifulSoup
-from typing import Dict, Any
+from typing import Dict, Any, List
 import re
 import logging
 
@@ -11,7 +16,8 @@ logger = logging.getLogger(__name__)
 
 
 class SeleniumScriptGenerator:
-        
+    """Generate Selenium Python scripts from test cases"""
+    
     def __init__(self):
         self.vector_store = vector_store_service
         self.llm = llm_service

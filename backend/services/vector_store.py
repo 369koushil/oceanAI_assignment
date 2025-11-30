@@ -10,9 +10,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-QDRANT_URL = os.getenv("QDRANT_URL")
-QDRANT_API_KEY = os.getenv("QDRANT_API_KEY")
-QDRANT_COLLECTION_NAME = os.getenv("QDRANT_COLLECTION_NAME", "qa_agent_knowledge_base")
+QDRANT_URL = "https://9d1bba16-8d90-425e-bcae-e7c1f172b312.us-east-1-1.aws.cloud.qdrant.io"
+QDRANT_API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3MiOiJtIn0.x5JZbkUvtJXajJ0Wm2E5bVHJvS82SsvVJ139nF6AfO4"
+QDRANT_COLLECTION_NAME = "qa_agent_knowledge_base"
 
 
 logger = logging.getLogger(__name__)

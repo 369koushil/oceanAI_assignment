@@ -1,22 +1,27 @@
+"""
+Improved LLM Service for Test Case + Selenium Script Generation
+Optimized for GPT-4o-mini (Standard Tier)
+"""
+
 from openai import OpenAI
 from typing import Optional, Dict, Any, List
 import logging
 import json
-import os
 from dotenv import load_dotenv
+import os
+
+logger = logging.getLogger(__name__)
 
 load_dotenv()
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
-
-logger = logging.getLogger(__name__)
-
+OPENAI_MODEL = "gpt-4o-mini"
 
 class LLMService:
+    """Improved Service for interacting with OpenAI GPT models"""
 
     def __init__(self):
-        self.model_name = OPENAI_MODEL
+        self.model_name = OPENAI_MODEL  # gpt-4o-mini
         self.api_key = OPENAI_API_KEY
         self.client = None
         self._initialize_client()
@@ -24,8 +29,7 @@ class LLMService:
     def _initialize_client(self):
         try:
             self.client = OpenAI(api_key=self.api_key)
-            logger.info(
-                f"OpenAI client initialized with model: {self.model_name}")
+            logger.info(f"OpenAI client initialized with model: {self.model_name}")
         except Exception as e:
             logger.error(f"Error initializing OpenAI: {e}")
             raise
@@ -214,13 +218,12 @@ Output:
     # ========================== HEALTH CHECK ==========================
     def health_check(self) -> bool:
         try:
-            # Simple check - just verify client exists
+        # Simple check - just verify client exists
             if self.client and self.api_key:
-                logger.info(
-                    f"✓ OpenAI client initialized with model: {self.model_name}")
+                logger.info(f"✓ OpenAI client initialized with model: {self.model_name}")
                 return True
             return False
-
+        
         except Exception as e:
             logger.error(f"OpenAI health check failed: {str(e)}")
             return False
