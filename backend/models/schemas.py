@@ -32,7 +32,7 @@ class HealthCheck(BaseModel):
     """Health check response"""
     status: str
     qdrant_connected: bool
-    ollama_available: bool
+    LLM_available: bool
     embedding_model_loaded: bool
     
 class TestCase(BaseModel):

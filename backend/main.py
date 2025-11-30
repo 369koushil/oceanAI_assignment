@@ -70,15 +70,15 @@ async def health_check():
         qdrant_connected = vector_store_service.health_check()
         
         # Check Ollama
-        ollama_available = True
+        LLM_available = True
         
         # Check embedding model
         embedding_model_loaded = embedding_service.embeddings is not None
         
         return HealthCheck(
-            status="healthy" if all([qdrant_connected, ollama_available, embedding_model_loaded]) else "degraded",
+            status="healthy" if all([qdrant_connected, LLM_available, embedding_model_loaded]) else "degraded",
             qdrant_connected=qdrant_connected,
-            ollama_available=ollama_available,
+            LLM_available=LLM_available,
             embedding_model_loaded=embedding_model_loaded
         )
     except Exception as e:
