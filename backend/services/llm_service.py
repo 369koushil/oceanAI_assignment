@@ -1,8 +1,3 @@
-"""
-Improved LLM Service for Test Case + Selenium Script Generation
-Optimized for GPT-4o-mini (Standard Tier)
-"""
-
 from openai import OpenAI
 from typing import Optional, Dict, Any, List
 import logging
@@ -16,6 +11,7 @@ load_dotenv()
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+
 
 class LLMService:
     """Improved Service for interacting with OpenAI GPT models"""
@@ -58,7 +54,7 @@ class LLMService:
 
     # ========================== RAG GENERATION ==========================
     def generate_with_rag(self, query: str, context: List[str], system_message: Optional[str] = None) -> str:
-        """Enhanced RAG generation"""
+        """Enhanced RAG generation with few-shot examples"""
 
         context_text = "\n\n---DOCUMENT---\n\n".join([
             f"[Document {i+1}]\n{ctx}" for i, ctx in enumerate(context)
@@ -66,11 +62,34 @@ class LLMService:
 
         if not system_message:
             system_message = (
-                "You are a QA expert. ONLY use the documentation provided.\n"
+                "You are a specialized QA testing expert. You ONLY help with test case generation "
+                "and Selenium automation.\n"
+                "For ANY question outside testing, you must decline politely.\n\n"
+
+                "Examples:\n\n"
+
+                "User: 'Generate test cases for login validation'\n"
+                "Assistant: [Provides test cases based on documentation]\n\n"
+
+                "User: 'What is the capital of France?'\n"
+                "Assistant: 'Sorry, I can only assist with test case and Selenium script generation. Please ask questions related to testing or automation.'\n\n"
+
+                "User: 'Write a Python function to sort a list'\n"
+                "Assistant: 'Sorry, I can only assist with test case and Selenium script generation. Please ask questions related to testing or automation.'\n\n"
+
+                "User: 'Create test cases for discount code validation'\n"
+                "Assistant: [Provides test cases based on documentation]\n\n"
+
+                "User: 'How does machine learning work?'\n"
+                "Assistant: 'Sorry, I can only assist with test case and Selenium script generation. Please ask questions related to testing or automation.'\n\n"
+
+                "User: 'Generate Selenium script for form submission'\n"
+                "Assistant: [Provides Selenium script based on test case]\n\n"
+
                 "Rules:\n"
-                "1. Never invent features not in the docs.\n"
-                "2. If information is missing, say: 'Not specified in documentation'.\n"
-                "3. Reference the source document for each fact.\n"
+                "1. ONLY answer testing/QA/Selenium questions\n"
+                "2. Use ONLY the provided documentation\n"
+                "3. Never invent features\n"
             )
 
         user_prompt = f"""
@@ -82,9 +101,9 @@ User Query:
 ========= END =========
 
 Instructions:
-- Use ONLY the information above.
-- Be accurate with numbers, labels, UI text, rules, validations.
-- If missing, explicitly state it.
+- If the query is about testing/QA/Selenium: Use ONLY the documentation above
+- If the query is NOT about testing: Respond with the decline message
+- Be accurate with numbers, labels, UI text, rules, validations
 """
 
         try:
@@ -111,10 +130,10 @@ Instructions:
         enhanced_system = (
             system_message
             + "\n\nSTRICT RULES:\n"
-              "1. Return ONLY valid JSON.\n"
-              "2. No markdown, no ```json code blocks.\n"
-              "3. Double quotes only.\n"
-              "4. Must be parseable.\n"
+            "1. Return ONLY valid JSON.\n"
+            "2. No markdown, no ```json code blocks.\n"
+            "3. Double quotes only.\n"
+            "4. Must be parseable.\n"
         )
 
         try:
@@ -144,7 +163,6 @@ Instructions:
     ) -> str:
         """Generate bulletproof Selenium Python script"""
 
-        # Case: Missing selectors → prevent hallucinations
         if not html_elements:
             return (
                 "# ERROR: html_elements is empty or missing.\n"
@@ -156,47 +174,47 @@ Instructions:
         steps_text = "\n".join([f"- {s}" for s in steps])
 
         sys_msg = """
-You are a senior automation engineer (10+ years experience).
-Generate a production-grade Python Selenium script.
-
-NON-NEGOTIABLE RULES:
-1. Use ONLY element selectors provided in html_elements. NEVER invent selectors.
-2. Forbidden selectors: generic XPaths (//button, //*). Do NOT use them.
-3. Always use WebDriverWait (no time.sleep).
-4. Use webdriver-manager for Chrome.
-5. Every script MUST include at least one assertion validating the expected result.
-6. If a required selector is missing, include:
-   # ERROR: Selector missing in html_elements
-7. Load checkout page using:
-   driver.get("file://" + os.path.abspath("checkout.html"))
-8. Output ONLY Python code (no markdown).
-"""
+            You are a senior automation engineer (10+ years experience).
+            Generate a production-grade Python Selenium script.
+            
+            NON-NEGOTIABLE RULES:
+            1. Use ONLY element selectors provided in html_elements. NEVER invent selectors.
+            2. Forbidden selectors: generic XPaths (//button, //*). Do NOT use them.
+            3. Always use WebDriverWait (no time.sleep).
+            4. Use webdriver-manager for Chrome.
+            5. Every script MUST include at least one assertion validating the expected result.
+            6. If a required selector is missing, include:
+            # ERROR: Selector missing in html_elements
+            7. Load checkout page using:
+            driver.get("file://" + os.path.abspath("checkout.html"))
+            8. Output ONLY Python code (no markdown).
+        """
 
         user_prompt = f"""
-Generate Selenium script for the following test case:
+            Generate Selenium script for the following test case:
 
-=== TEST CASE ===
-Test ID: {test_case.get("test_id")}
-Feature: {test_case.get("feature")}
-Scenario: {test_case.get("test_scenario")}
-Type: {test_case.get("test_type")}
-Preconditions: {test_case.get("preconditions")}
-Steps:
-{steps_text}
-Expected Result:
-{test_case.get("expected_result")}
+            === TEST CASE ===
+            Test ID: {test_case.get("test_id")}
+            Feature: {test_case.get("feature")}
+            Scenario: {test_case.get("test_scenario")}
+            Type: {test_case.get("test_type")}
+            Preconditions: {test_case.get("preconditions")}
+            Steps:
+            {steps_text}
+            Expected Result:
+            {test_case.get("expected_result")}
 
-=== HTML ELEMENTS ===
-{elements_json}
+            === HTML ELEMENTS ===
+            {elements_json}
 
-=== CONTEXT (Documentation) ===
-{context[0] if context else "No context"}
+            === CONTEXT (Documentation) ===
+            {context[0] if context else "No context"}
 
-Output:
-- ONLY Python code
-- No markdown
-- No comments outside the Python script
-"""
+            Output:
+            - ONLY Python code
+            - No markdown
+            - No comments outside the Python script
+            """
 
         try:
             response = self.client.chat.completions.create(
@@ -218,12 +236,11 @@ Output:
     # ========================== HEALTH CHECK ==========================
     def health_check(self) -> bool:
         try:
-        # Simple check - just verify client exists
             if self.client and self.api_key:
                 logger.info(f"✓ OpenAI client initialized with model: {self.model_name}")
                 return True
             return False
-        
+
         except Exception as e:
             logger.error(f"OpenAI health check failed: {str(e)}")
             return False

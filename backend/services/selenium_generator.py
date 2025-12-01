@@ -1,7 +1,3 @@
-"""
-Selenium Script Generation Service
-Generates executable Python Selenium scripts from test cases
-"""
 import json
 from backend.services.vector_store import vector_store_service
 from backend.services.llm_service import llm_service
@@ -215,15 +211,14 @@ class SeleniumScriptGenerator:
         if not has_imports:
             # Add imports at the beginning
             imports_block = """from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
-import os
-import time
-
-"""
+                    from selenium.webdriver.common.by import By
+                    from selenium.webdriver.support.ui import WebDriverWait
+                    from selenium.webdriver.support import expected_conditions as EC
+                    from selenium.webdriver.chrome.service import Service
+                    from webdriver_manager.chrome import ChromeDriverManager
+                    import os
+                    import time
+                """
             script = imports_block + script
         
         return script
