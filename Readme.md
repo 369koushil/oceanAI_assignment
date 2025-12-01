@@ -44,34 +44,78 @@ Watch the complete working demonstration of the Autonomous QA Agent:
 ## 🎯 Overview
 This system automates the QA testing workflow through:
 
-1. **Document ingestion**  
-2. **Vector-based knowledge base creation**  
-3. **RAG-based grounded test case generation**  
-4. **Auto-generated Selenium test scripts**  
+1. Ingesting and parsing documentation  
+2. Creating a vector-based knowledge base using Qdrant  
+3. Generating grounded test cases using RAG  
+4. Creating executable Selenium Python scripts  
 
 ---
 
 ## 🏗️ Architecture
-(Architecture text unchanged, omitted here for brevity)
+
+### High-Level Overview
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        User Interface                            │
+│                     (Streamlit Frontend)                         │
+└────────────────────────┬────────────────────────────────────────┘
+                         │ HTTP/REST
+                         ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                        FastAPI Backend                           │
+│   ┌────────────────┐  ┌────────────────┐  ┌──────────────────┐   │
+│   │ Document       │  │   Test Case    │  │  Selenium Script │   │
+│   │ Processor      │  │   Generator    │  │    Generator     │   │
+│   └────────────────┘  └────────────────┘  └──────────────────┘   │
+└─────────┬──────────────────────┬──────────────────────┬──────────┘
+          │                      │                      │
+          ▼                      ▼                      ▼
+   ┌─────────────┐      ┌─────────────┐        ┌─────────────┐
+   │ HuggingFace │      │   Qdrant     │        │   OpenAI     │
+   │ Embeddings  │      │ Vector Store │        │ GPT-4o-mini  │
+   └─────────────┘      └─────────────┘        └─────────────┘
+```
 
 ---
 
 ## ✨ Features
-(Features section unchanged, full content included in earlier file)
+- Multi-document ingestion  
+- Vector-based semantic search  
+- Grounded test case generation  
+- Automatic Selenium script creation  
+- HTML element parsing for selectors  
+- Real-time validation  
+- Clean modular backend  
 
 ---
 
 ## 🛠️ Tech Stack
-(Tech stack unchanged)
+
+### Backend
+- FastAPI  
+- Qdrant Cloud  
+- HuggingFace Embeddings  
+- OpenAI GPT‑4o‑mini  
+- LangChain Orchestration  
+- Pydantic v2  
+
+### Frontend
+- Streamlit  
+- Requests  
+
+### File Processing
+- PyMuPDF  
+- BeautifulSoup4  
+- python-markdown  
 
 ---
 
-## 💻 Project Requirements
+## 💻 System Requirements
 - Python 3.10+  
-- 4GB RAM (8GB recommended)  
-- Internet for Qdrant & OpenAI  
-- Qdrant Cloud free tier  
+- Minimum 4GB RAM  
+- Stable Internet  
 - OpenAI API key  
+- Qdrant Cloud instance  
 
 ---
 
@@ -82,17 +126,19 @@ autonomous-qa-agent/
 ├── backend/
 │   ├── main.py
 │   ├── services/
-│   │   ├── document_processor.py
-│   │   ├── embeddings.py
-│   │   ├── vector_store.py
-│   │   ├── llm_service.py
-│   │   ├── test_case_generator.py
-│   │   └── selenium_generator.py
+│   │   ├── document_processor.py       # Parses MD, PDF, TXT, JSON, HTML
+│   │   ├── embeddings.py               # Generates HuggingFace embeddings
+│   │   ├── vector_store.py             # Qdrant operations
+│   │   ├── llm_service.py              # OpenAI service wrapper
+│   │   ├── test_case_generator.py      # RAG-based generation
+│   │   └── selenium_generator.py       # Selenium Python generator
 │   ├── models/
-│       └── schemas.py
+│   │   └── schemas.py
+│   └── utils/
+│       └── helpers.py
 │
 ├── frontend/
-│   └── app.py
+│   └── app.py                          # Streamlit UI
 │
 ├── project_assets/
 │   ├── checkout.html
@@ -100,6 +146,8 @@ autonomous-qa-agent/
 │   ├── ui_ux_guide.txt
 │   ├── api_endpoints.json
 │   └── test_scenarios.md
+│
+├── tests/
 │
 ├── requirements.txt
 ├── .env.example
@@ -116,7 +164,7 @@ git clone <your-repo-url>
 cd autonomous-qa-agent
 ```
 
-### Create Virtual Environment
+### Virtual Environment
 ```bash
 python -m venv venv
 source venv/bin/activate
@@ -132,80 +180,149 @@ pip install -r requirements.txt
 
 ## ⚙️ Configuration
 
-Create `.env` file:
+### Create `.env`
 ```bash
 cp .env.example .env
 ```
 
-Fill values:
-```
+Fill environment variables:
+```env
 QDRANT_URL=
 QDRANT_API_KEY=
+QDRANT_COLLECTION_NAME=qa_agent_knowledge_base
+
 OPENAI_API_KEY=
+OPENAI_MODEL=gpt-4o-mini
+
+EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2
+EMBEDDING_DIMENSION=384
+
+CHUNK_SIZE=1000
+CHUNK_OVERLAP=200
 ```
 
 ---
 
 ## 📖 Usage
 
-### Run Backend
+### Run From Project Root
+
+#### Backend
 ```bash
 uvicorn backend.main:app --reload
 ```
 
-### Run Frontend
+#### Frontend
 ```bash
 streamlit run frontend/app.py
 ```
 
+### Workflow
+1. Upload documents  
+2. Upload target HTML  
+3. Build knowledge base  
+4. Generate test cases  
+5. Generate Selenium scripts  
+
 ---
 
 ## 🔄 How It Works
-(Document processing, RAG, Selenium generation — unchanged from previous version)
+
+### Document Pipeline
+1. Extract text  
+2. Chunk using RecursiveCharacterTextSplitter  
+3. Embed using MiniLM  
+4. Store vectors in Qdrant  
+
+### Test Case Generation
+1. User query → embedding  
+2. Similarity search  
+3. Retrieve context  
+4. GPT‑4o‑mini generates grounded test cases  
+
+### Selenium Script Generation
+1. HTML parsing  
+2. Identify selectors  
+3. Inject context  
+4. Generate optimized Python Selenium script  
 
 ---
 
 ## 📚 API Documentation
-(unchanged)
+
+### Health Check
+```http
+GET /health
+```
+
+### Upload Documents
+```http
+POST /api/upload-documents
+```
+
+### Generate Test Cases
+```http
+POST /api/generate-test-cases
+```
+
+### Generate Selenium Script
+```http
+POST /api/generate-selenium-script
+```
 
 ---
 
 ## 🧪 Testing
-```bash
+```
 pytest tests/ -v
 ```
 
 ---
 
-## 🚢 Deployment (No Docker)
-Run directly:
+## 🚢 Deployment (No Docker Needed)
 
+Run manually:
+
+### Backend
 ```bash
 uvicorn backend.main:app --reload
+```
+
+### Frontend
+```bash
 streamlit run frontend/app.py
 ```
 
 ---
 
 ## ⚠️ Limitations
-(unchanged)
+- Requires cloud APIs  
+- Limited to English  
+- Minor script adjustments may be needed  
 
 ---
 
 ## 🔮 Future Enhancements
-(unchanged)
+- Multi-LLM backend  
+- API test automation  
+- Mobile automation  
+- Integrated test runner  
+- CI/CD plugins  
 
 ---
 
-## 👤 Author
+## 👤 Author  
 **Koushil**  
+Generative AI Developer  
 Email: **koushil463@gmail.com**
 
 ---
 
-## 📞 Support
-- Check README  
-- View `/docs`  
-- Open GitHub issue  
+## 📞 Support  
+- Review documentation  
+- Use `/docs`  
+- Open GitHub issues  
+
+---
 
 _Last Updated: December 2025_
