@@ -6,8 +6,6 @@ An intelligent, AI-powered QA automation system that generates comprehensive tes
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.122.0-green.svg)](https://fastapi.tiangolo.com/)
 [![OpenAI](https://img.shields.io/badge/OpenAI-GPT--4o--mini-orange.svg)](https://openai.com/)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-
 ---
 
 ## 🎥 Demo Video
@@ -335,15 +333,6 @@ streamlit run frontend/app.py
 
 ---
 
-## 🔮 Future Enhancements
-- Multi‑LLM support  
-- API test case generation  
-- CI/CD integration  
-- Mobile automation (Appium)  
-- Visual test reporting  
-
----
-
 ## 👤 Author
 **Koushil**  
 Generative AI Developer  
@@ -357,5 +346,3 @@ Email: **koushil463@gmail.com**
 - Create GitHub issue  
 
 ---
-
-_Last Updated: December 2025_
