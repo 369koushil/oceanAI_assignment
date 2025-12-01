@@ -1,26 +1,61 @@
-# Autonomous QA Agent
 
-An intelligent QA agent that generates comprehensive test cases and executable Selenium scripts from project documentation using **RAG (Retrieval Augmented Generation)** and **LLM technology**.
+# 🤖 Autonomous QA Agent
 
-## Table of Contents
+An intelligent, AI-powered QA automation system that generates comprehensive test cases and executable Selenium scripts from project documentation using **Retrieval Augmented Generation (RAG)**.
 
-* Overview
-* Features
-* Tech Stack
-* Prerequisites
-* Installation
-* Environment Variables
-* Usage
-* Project Structure
-* API Documentation
-* Included Assets
-* Demo Video
-* Troubleshooting
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.122.0-green.svg)](https://fastapi.tiangolo.com/)
+[![OpenAI](https://img.shields.io/badge/OpenAI-GPT--4o--mini-orange.svg)](https://openai.com/)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
+---
+
+## 🎥 Demo Video
+Watch the complete working demonstration of the Autonomous QA Agent:
+
+<video src="https://github.com/user-attachments/assets/56d0847e-dad7-41d7-8997-f227ded94c90" controls width="100%" style="max-width: 900px;">
+  Your browser does not support the video tag.
+</video>
+
+---
+
+## 📋 Table of Contents
+- Overview  
+- Demo Video  
+- Architecture  
+- Features  
+- Tech Stack  
+- System Requirements  
+- Installation  
+- Configuration  
+- Usage  
+- Project Structure  
+- How It Works  
+- API Documentation  
+- Testing  
+- Deployment  
+- Limitations  
+- Future Enhancements  
+- Author  
+- Support  
+
+---
+
+## 🎯 Overview
+This system automates the QA testing workflow through:
+
+1. **Document ingestion** — MD, TXT, JSON, PDF, HTML  
+2. **Vector-based knowledge base creation**  
+3. **RAG-based grounded test case generation**  
+4. **Auto-generated Selenium test scripts**  
+
+**Zero hallucination policy:** All test cases are strictly grounded in the uploaded documentation.
+
+---
 
 ## 🏗️ Architecture
 
-### High-Level Architecture
-
+### High-Level Overview
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                        User Interface                            │
@@ -29,289 +64,298 @@ An intelligent QA agent that generates comprehensive test cases and executable S
                          │ HTTP/REST
                          ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                     FastAPI Backend                              │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐         │
-│  │   Document   │  │  Test Case   │  │   Selenium   │         │
-│  │  Processor   │  │  Generator   │  │  Generator   │         │
-│  └──────────────┘  └──────────────┘  └──────────────┘         │
-└─────────────┬───────────────┬───────────────┬──────────────────┘
-              │               │               │
-              ▼               ▼               ▼
-    ┌─────────────┐  ┌─────────────┐  ┌─────────────┐
-    │  HuggingFace│  │   Qdrant    │  │   OpenAI    │
-    │  Embeddings │  │   Vector    │  │  GPT-4o     │
-    │             │  │     DB      │  │    mini     │
-    └─────────────┘  └─────────────┘  └─────────────┘
-```
-
-### Data Flow
-
-```
-1. Document Upload
-   ├── User uploads MD/TXT/JSON/PDF/HTML
-   ├── Document Processor extracts text
-   ├── RecursiveCharacterTextSplitter chunks text
-   ├── HuggingFace generates embeddings (384-dim)
-   └── Qdrant Cloud stores vectors + metadata
-
-2. Test Case Generation (RAG)
-   ├── User query converted to embedding
-   ├── Vector similarity search in Qdrant
-   ├── Top-K relevant chunks retrieved
-   ├── Chunks + query sent to OpenAI
-   ├── LLM generates structured test cases
-   └── Response parsed and validated
-
-3. Selenium Script Generation
-   ├── Test case selected
-   ├── HTML parsed for element selectors
-   ├── Relevant docs retrieved from Qdrant
-   ├── Test case + HTML + docs sent to OpenAI
-   ├── LLM generates Python Selenium code
-   └── Script cleaned and validated
-```
-
-### Component Diagram
-
-```
-Frontend (Streamlit)
-    │
-    ├─ Step 1: Knowledge Base Building
-    │    ├─ File upload interface
-    │    ├─ Progress indicators
-    │    └─ Status notifications
-    │
-    ├─ Step 2: Test Case Generation
-    │    ├─ Query input
-    │    ├─ Test case display
-    │    └─ Source attribution
-    │
-    └─ Step 3: Script Generation
-         ├─ Test case selection
-         ├─ Script preview
-         └─ Download functionality
-
-Backend (FastAPI)
-    │
-    ├─ Services Layer
-    │    ├─ document_processor.py → Text extraction & chunking
-    │    ├─ embeddings.py → Vector generation
-    │    ├─ vector_store.py → Qdrant operations
-    │    ├─ llm_service.py → OpenAI integration
-    │    ├─ test_case_generator.py → RAG-based generation
-    │    └─ selenium_generator.py → Script creation
-    │
-    ├─ Models Layer
-    │    └─ schemas.py → Pydantic models
-    │
-    └─ API Endpoints
-         ├─ POST /api/upload-documents
-         ├─ POST /api/upload-html
-         ├─ POST /api/generate-test-cases
-         ├─ POST /api/generate-selenium-script
-         └─ GET /health
-
-External Services
-    │
-    ├─ Qdrant Cloud → Vector storage & search
-    ├─ OpenAI API → LLM for generation
-    └─ HuggingFace → Embedding models
+│                        FastAPI Backend                           │
+│   ┌────────────────┐  ┌────────────────┐  ┌──────────────────┐   │
+│   │ Document       │  │   Test Case    │  │  Selenium Script │   │
+│   │ Processor      │  │   Generator    │  │    Generator     │   │
+│   └────────────────┘  └────────────────┘  └──────────────────┘   │
+└─────────┬──────────────────────┬──────────────────────┬──────────┘
+          │                      │                      │
+          ▼                      ▼                      ▼
+   ┌─────────────┐      ┌─────────────┐        ┌─────────────┐
+   │ HuggingFace │      │   Qdrant     │        │   OpenAI     │
+   │ Embeddings  │      │ Vector Store │        │ GPT-4o-mini  │
+   └─────────────┘      └─────────────┘        └─────────────┘
 ```
 
 ---
 
-## Overview
-
-This system automates the QA process by:
-
-1. Ingesting project documentation
-2. Building a knowledge base using embeddings + vector search (Qdrant)
-3. Generating grounded test cases using RAG
-4. Creating executable Selenium scripts
-
-Outputs are grounded in documentation — no hallucinations.
-
 ## ✨ Features
 
-* Multi-format document parsing
-* Qdrant-based vector search
-* RAG-powered test generation
-* Selenium script generation
-* Streamlit UI
-* Source references
-* Strict grounding
+### Core
+- Multi-format document ingestion  
+- Vector knowledge base using Qdrant  
+- RAG-powered grounded test cases  
+- Automated Selenium Python script generation  
+- Source attribution for every test case  
+- Real-time validation  
 
-## Tech Stack
+### Technical
+- Async FastAPI backend  
+- LangChain v0.3.14 pipelines  
+- Pydantic v2 models  
+- HuggingFace MiniLM embeddings  
+- Clean architecture separation  
+- Extensive logging & error handling  
+
+---
+
+## 🛠️ Tech Stack
 
 ### Backend
-
-* FastAPI
-* LangChain
-* OpenAI API (gpt-4o-mini)
-* Qdrant Cloud
-* Sentence Transformers
+| Component | Technology |
+|----------|------------|
+| Framework | FastAPI |
+| LLM | OpenAI GPT‑4o‑mini |
+| Embeddings | sentence-transformers/all-MiniLM-L6-v2 |
+| Vector DB | Qdrant Cloud |
+| Orchestration | LangChain |
+| Validation | Pydantic v2 |
 
 ### Frontend
+| Component | Technology |
+|----------|------------|
+| UI Framework | Streamlit |
+| HTTP Client | Requests |
 
-* Streamlit
+### Document Parsing
+- PyMuPDF (PDF)
+- BeautifulSoup4 (HTML)
+- python-markdown (MD)
+- LangChain RecursiveCharacterTextSplitter
 
-### Other
+---
 
-* Selenium
+## 💻 System Requirements
+- Python 3.10+
+- 4GB RAM (8GB recommended)
+- Internet (for API + Qdrant)
+- Qdrant Cloud (free tier)
+- OpenAI API key
 
-## Prerequisites
+---
 
-### Python
+## 🚀 Installation
 
-Python 3.10+
-
-### OpenAI
-
-Get API key from [https://platform.openai.com/](https://platform.openai.com/)
-
-Model used: `gpt-4o-mini`
-
-### Qdrant
-
-Create free cluster and get credentials.
-
-## Installation
-
-### Clone
-
-```
+### 1. Clone Repository
+```bash
 git clone <your-repo-url>
 cd autonomous-qa-agent
 ```
 
-### Virtual Environment
-
-```
+### 2. Create Virtual Env
+```bash
 python -m venv venv
-venv\Scripts\activate    # Windows
-source venv/bin/activate  # macOS/Linux
+source venv/bin/activate
 ```
 
-### Install Dependencies
-
-```
+### 3. Install Dependencies
+```bash
+pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-### Create `.env`
+---
 
-```
+## ⚙️ Configuration
+
+### Create `.env`
+```bash
 cp .env.example .env
 ```
 
-Update:
-
-```
-OPENAI_API_KEY=your-openai-key
-OPENAI_MODEL=gpt-4o-mini
-QDRANT_URL=your-url
-QDRANT_API_KEY=your-key
+Fill values:
+```env
+QDRANT_URL=
+QDRANT_API_KEY=
 QDRANT_COLLECTION_NAME=qa_agent_knowledge_base
+
+OPENAI_API_KEY=
+OPENAI_MODEL=gpt-4o-mini
+
 EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2
+EMBEDDING_DIMENSION=384
+
+CHUNK_SIZE=1000
+CHUNK_OVERLAP=200
 ```
 
-## Environment Variables
+---
 
-Config is loaded directly from `.env` using:
+## 📖 Usage
 
-```python
-from dotenv import load_dotenv
-load_dotenv()
+### Run From Project Root
+
+#### Start Backend
+```bash
+uvicorn backend.main:app --reload
 ```
 
-## Usage
-
-### Start Backend
-
-```
-cd backend
-python main.py
+#### Start Frontend
+```bash
+streamlit run frontend/app.py
 ```
 
-### Start Frontend
+### Workflow
 
+#### Step 1 — Build Knowledge Base
+- Upload documents  
+- Upload HTML  
+- Click Build  
+- Vectors stored in Qdrant  
+
+#### Step 2 — Generate Test Cases
+Example query:
 ```
-cd frontend
-streamlit run app.py
+Generate positive and negative test cases for discount code validation
 ```
 
-### Build Knowledge Base
+#### Step 3 — Generate Selenium Scripts
+- Select test case  
+- Generate Python Selenium script  
+- Download + execute  
 
-Upload documents → Upload HTML → Click Build.
+---
+
+## 📁 Project Structure
+```
+autonomous-qa-agent/
+│
+├── backend/
+│   ├── main.py
+│   ├── services/
+│   │   ├── document_processor.py
+│   │   ├── embeddings.py
+│   │   ├── vector_store.py
+│   │   ├── llm_service.py
+│   │   ├── test_case_generator.py
+│   │   └── selenium_generator.py
+│   ├── models/
+│   │   └── schemas.py
+│   └── utils/
+│       └── helpers.py
+│
+├── frontend/
+│   └── app.py
+│
+├── project_assets/
+│   ├── checkout.html
+│   ├── product_specs.md
+│   ├── ui_ux_guide.txt
+│   ├── api_endpoints.json
+│   └── test_scenarios.md
+│
+├── tests/
+│
+├── requirements.txt
+├── .env.example
+└── README.md
+```
+
+---
+
+## 🔄 How It Works
+
+### Document Processing
+1. Extract text  
+2. Chunk using RecursiveCharacterTextSplitter  
+3. Generate embeddings  
+4. Store vectors in Qdrant  
+
+### RAG Test Case Generation
+1. Query → embedding  
+2. Vector similarity search  
+3. Top‑K docs returned  
+4. Context injected  
+5. LLM generates grounded test cases  
+
+### Selenium Script Generation
+1. Parse HTML  
+2. Extract selectors  
+3. Retrieve relevant docs  
+4. Prompt OpenAI  
+5. Output refined Python Selenium code  
+
+---
+
+## 📚 API Documentation
+
+### Health Check
+```http
+GET /health
+```
+
+### Upload Documents
+```http
+POST /api/upload-documents
+```
 
 ### Generate Test Cases
-
-Enter prompt → Generate.
+```http
+POST /api/generate-test-cases
+```
 
 ### Generate Selenium Script
-
-Select test case → Generate.
-
-## Project Structure
-
-```
-backend/
-  main.py
-  services/
-  models/
-  utils/
-frontend/
-project_assets/
-README.md
-.env
+```http
+POST /api/generate-selenium-script
 ```
 
-## API Documentation
+---
 
-Available at:
+## 🧪 Testing
 
+### Run Tests
+```bash
+pytest tests/ -v
 ```
-http://localhost:8000/docs
+
+---
+
+## 🚢 Deployment (No Docker)
+
+Run directly:
+
+### Backend
+```bash
+uvicorn backend.main:app --reload
 ```
 
-## Included Assets
+### Frontend
+```bash
+streamlit run frontend/app.py
+```
 
-* checkout.html
-* product_specs.md
-* ui_ux_guide.txt
-* api_endpoints.json
-* test_scenarios.md
+---
 
-## Demo Video
+## ⚠️ Limitations
+- LLM dependency  
+- Requires internet  
+- Occasional script refinement needed  
+- English-only context  
 
-Record steps:
+---
 
-1. Health check
-2. Upload docs
-3. Build KB
-4. Generate test cases
-5. Generate Selenium script
+## 🔮 Future Enhancements
+- Multi‑LLM support  
+- API test case generation  
+- CI/CD integration  
+- Mobile automation (Appium)  
+- Visual test reporting  
 
-## Troubleshooting
+---
 
-### OpenAI Errors
+## 👤 Author
+**Koushil**  
+Generative AI Developer  
+Email: **koushil463@gmail.com**
 
-401 = invalid API key.
+---
 
-### Qdrant Errors
+## 📞 Support
+- Read this README  
+- Check `/docs`  
+- Create GitHub issue  
 
-Check URL & key.
+---
 
-### Missing Results
-
-Reset & rebuild KB.
-
-## Security
-
-* Never commit `.env`
-* Rotate keys
-* Set OpenAI usage limits
-
-## Author
-
-Koushil
+_Last Updated: December 2025_
