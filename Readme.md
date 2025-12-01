@@ -103,11 +103,6 @@ This system automates the QA testing workflow through:
 - Streamlit  
 - Requests  
 
-### File Processing
-- PyMuPDF  
-- BeautifulSoup4  
-- python-markdown  
-
 ---
 
 ## 💻 System Requirements
@@ -250,6 +245,12 @@ streamlit run frontend/app.py
 
 ## 📚 API Documentation
 
+This project uses **FastAPI**, which automatically provides interactive API documentation.
+
+### 📘 Swagger UI  
+Access the full API documentation and test endpoints directly from your browser:  
+👉 **http://localhost:8000/docs**
+
 ### Health Check
 ```http
 GET /health
@@ -272,14 +273,7 @@ POST /api/generate-selenium-script
 
 ---
 
-## 🧪 Testing
-```
-pytest tests/ -v
-```
-
----
-
-## 🚢 Deployment (No Docker Needed)
+## 🚢 Deployment
 
 Run manually:
 
@@ -302,15 +296,6 @@ streamlit run frontend/app.py
 
 ---
 
-## 🔮 Future Enhancements
-- Multi-LLM backend  
-- API test automation  
-- Mobile automation  
-- Integrated test runner  
-- CI/CD plugins  
-
----
-
 ## 👤 Author  
 **Koushil**  
 Generative AI Developer  
@@ -325,4 +310,3 @@ Email: **koushil463@gmail.com**
 
 ---
 
-_Last Updated: December 2025_
